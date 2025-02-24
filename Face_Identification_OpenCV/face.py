@@ -52,7 +52,7 @@ while True:
         
         # Display the label and confidence percentage
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(frame, f"{name} {confidence_percentage}%", (x, y - 10), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
+        cv2.putText(frame, f"{name} {confidence_percentage}%", (x, y - 10), font, 1, (255, 0, 0), 2, cv2.LINE_AA)
         cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
         
         # Optionally draw eyes
