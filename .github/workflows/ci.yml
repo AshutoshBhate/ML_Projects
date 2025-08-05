@@ -1,0 +1,60 @@
+name: Run API Tests
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'Potato_Disease_Classification/api/**'
+      - 'Potato_Disease_Classification/tests/**'
+      - '.github/workflows/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_USER: ${{ secrets.TEST_DB_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.TEST_DB_NAME }}_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-mock Pillow psycopg2-binary
+        pip install -r Potato_Disease_Classification/api/requirements.txt
+
+    - name: Run Pytest
+      run: pytest Potato_Disease_Classification/tests/
+      env:
+        PYTHONPATH: Potato_Disease_Classification
+
+        DATABASE_HOSTNAME: localhost
+        DATABASE_PORT: 5432
+        DATABASE_USERNAME: ${{ secrets.TEST_DB_USER }}
+        DATABASE_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
+        DATABASE_NAME: ${{ secrets.TEST_DB_NAME }}
+
+        SECRET_KEY: ${{ secrets.TEST_SECRET_KEY }}
+        ALGORITHM: ${{ secrets.TEST_ALGORITHM }}
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.TEST_TOKEN_EXPIRE_MINUTES }}
+        
+        TF_SERVING_URL: "http://mock-server:8501"

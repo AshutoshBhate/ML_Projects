@@ -1,0 +1,87 @@
+# App Workflow & Docker Cheat Sheet
+
+A complete guide for running, rebuilding, and managing the Potato Disease Classification project, including the FastAPI backend, TensorFlow Serving, and Streamlit frontend.
+
+---
+### 1. One-Time Setup
+
+You only need to run these commands once to get the necessary base images from Docker Hub.
+
+```bash
+# Pull the TensorFlow Serving image
+docker pull tensorflow/serving:latest
+
+# Pull the PostgreSQL image (useful if you decide to containerize the DB later)
+docker pull postgres:13
+
+**********************************************************************************************************************
+
+**********The Main Development Workflow (Restart & Rebuild)**********
+
+# === STEP A: STOP AND REMOVE OLD CONTAINERS ===
+# Stop containers by their fixed names. It's okay if this errors if they aren't running.
+docker stop tf_serving_potato fastapi_potato_app
+
+# Remove the stopped containers to clean up.
+docker rm tf_serving_potato fastapi_potato_app
+
+# === STEP B: REMOVE THE OLD FASTAPI IMAGE ===
+# This is required before you can rebuild the image with the same name.
+docker rmi fastapi-potato-classifier:latest
+
+# === STEP C: BUILD THE NEW FASTAPI IMAGE ===
+# Build from the project root, pointing to the Dockerfile inside the 'api' folder.
+# The '.' at the end is crucial; it sets the build context to the current directory.
+docker build -t fastapi-potato-classifier -f api/Dockerfile .
+
+# === STEP D: RUN THE CONTAINERS ===
+# D.1 - Run the TensorFlow Serving Container
+# This mounts your local model into the container and gives it a consistent name.
+docker run -d --name tf_serving_potato -p 8501:8501 --mount type=bind,source="C:\Users\ashut\ML_Practice\Potato_Disease_Classification\Saved_Models",target=/models/potato_disease_classifier -e MODEL_NAME=potato_disease_classifier tensorflow/serving
+
+# D.2 - Run the FastAPI Container
+# This uses your .env file (in the project root) to securely pass environment variables.
+docker run -d --name fastapi_potato_app -p 8000:8000 --env-file ./.env fastapi-potato-classifier
+
+# === STEP E: RUN THE STREAMLIT FRONTEND ===
+# Navigate to the streamlit app's directory.
+cd streamlit_app
+
+# Run the Streamlit app on your specified port.
+streamlit run app_AfterAuthorization.py --server.port 8502
+
+*************************************************************************************************************************
+
+**********Useful Management & Standalone Commands**********
+
+# --- Docker Management ---
+
+# List all RUNNING containers
+docker ps
+
+# List ALL containers (running and stopped)
+docker ps -a
+
+# View the logs of a container to debug issues
+docker logs fastapi_potato_app
+
+# Follow the logs of a container in real-time
+docker logs -f fastapi_potato_app
+
+# List all Docker images on your machine
+docker image ls
+
+# Start a specific STOPPED container (e.g., if you rebooted your PC)
+docker start tf_serving_potato
+docker start fastapi_potato_app
+
+# Stop a specific RUNNING container
+docker stop tf_serving_potato
+docker stop fastapi_potato_app
+
+# --- Local Development (No Docker for FastAPI) ---
+
+# To run the FastAPI server locally for quick tests without building an image.
+# Make sure your .env file is configured for a local database connection.
+# Run this from the project root directory.
+uvicorn api.main_Routers:app --reload

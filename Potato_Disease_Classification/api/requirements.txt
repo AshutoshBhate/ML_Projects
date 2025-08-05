@@ -1,0 +1,20 @@
+tensorflow==2.17.1
+tensorflow-serving-api==2.17.1
+fastapi
+uvicorn
+python-multipart
+Pillow
+matplotlib              # Only if you are plotting images or graphs
+numpy
+requests
+psycopg2-binary         # For PostgreSQL connection
+SQLAlchemy              # For database interactions
+pydantic-settings
+python-jose[cryptography]
+email-validator
+passlib[bcrypt]==1.7.4
+pytest
+pytest-mock
+pytest-cov
+requests-mock
+httpx
