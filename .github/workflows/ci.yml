@@ -1,6 +1,6 @@
 # .github/workflows/ci.yml (Final Version with Deploy Step)
 
-name: Test, Build, Push, and Deploy API
+name: Test Build Push and Deploy API
 
 on:
   push:
