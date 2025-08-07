@@ -68,7 +68,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./Potato_Disease_Classification/api
           file: ./Potato_Disease_Classification/api/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/potato-classifier-api:latest
