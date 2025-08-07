@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DATABASE_USERNAME}
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=${DATABASE_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  tf-serving:
+    image: tensorflow/serving:latest
+    ports:
+      - "8501:8501" 
+    volumes:
+      # Mount your saved models directory into the container
+      - ./Saved_Models/:/models/potato_disease_classifier
+    environment:
+      - MODEL_NAME=potato_disease_classifier
+
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/usr/src/app
+    env_file:
+      - .env
+    environment:
+      - DATABASE_HOSTNAME=db
+      - TF_SERVING_URL=http://tf-serving:8501/v1/models/potato_disease_classifier:predict
+    depends_on:
+      db:
+        condition: service_healthy
+      tf-serving:
+        condition: service_started
+
+volumes:
+  postgres_data:

@@ -107,7 +107,12 @@ if st.session_state.token:
                         st.info("You have no predictions yet.")
                     else:
                         for item in reversed(history):
-                            dt_object = datetime.fromisoformat(item['timestamp'])
+                            timestamp_str = item['timestamp']
+                            if timestamp_str.endswith('Z'):
+                                timestamp_str = timestamp_str[:-1] + '+00:00'
+                            
+                            dt_object = datetime.fromisoformat(timestamp_str)
+                            formatted_date = dt_object.strftime("%B %d, %Y at %I:%M %p")
                             formatted_date = dt_object.strftime("%B %d, %Y at %I:%M %p")
                             with st.expander(f"Prediction from {formatted_date}"):
                                 st.write(f"**Result:** {item['predicted_class']}")
