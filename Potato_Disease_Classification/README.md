@@ -5,7 +5,7 @@
 ![Streamlit](https://img.shields.io/badge/Streamlit-1.25.0-red.svg)
 ![Docker](https://img.shields.io/badge/Docker-24.0-blue.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-blue.svg)
-![CI](https://github.com/AshutoshBhate/ML_Projects/actions/workflows/ci.yml/badge.svg)
+![CI/CD](https://github.com/AshutoshBhate/ML_Projects/actions/workflows/ci.yml/badge.svg)
 
 This project is a complete full-stack application designed to classify potato diseases from leaf images. It features a deep learning model for classification, a high-performance RESTful API to serve the model, a secure user authentication system with JWT, and an interactive web interface for users. The entire system is containerized with Docker for easy deployment and includes a CI pipeline with GitHub Actions for automated testing.
 
@@ -70,7 +70,7 @@ The typical user flow is as follows:
 | **Authentication**| [python-jose](https://github.com/mpdavis/python-jose) (for JWT), [passlib[bcrypt]](https://passlib.readthedocs.io/en/stable/) (for Hashing) |
 | **Data Validation** | [Pydantic](https://docs.pydantic.dev/latest/)                                                               |
 | **Testing** | [Pytest](https://docs.pytest.org/), [pytest-mock](https://pytest-mock.readthedocs.io/)                       |
-| **Deployment & CI** | [Docker](https://www.docker.com/), [GitHub Actions](https://github.com/features/actions)                    |
+| **Deployment & CI/CD** | [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/), [GitHub Actions](https://github.com/features/actions) |
 
 ---
 
@@ -79,37 +79,52 @@ The typical user flow is as follows:
 The repository is organized as follows to maintain a clean separation of concerns:
 
 ```
-.
+Potato_Disease_Classification/
+├── .env                                 # Local environment variables (add to .gitignore)
 ├── .github/
 │   └── workflows/
-│       └── ci.yml              # GitHub Actions CI workflow
-├── Potato_Disease_Classification/
-│   ├── api/                    # Source code for the FastAPI application
-│   │   ├── routers/            # API endpoint definitions
-│   │   │   ├── auth.py
-│   │   │   ├── prediction.py
-│   │   │   └── user.py
-│   │   ├── config.py           # Pydantic settings management
-│   │   ├── database.py         # Database connection and session logic
-│   │   ├── main_Routers.py     # Main FastAPI app instance and middleware
-│   │   ├── models.py           # SQLAlchemy database models
-│   │   ├── oauth2.py           # JWT creation and verification logic
-│   │   ├── schemas.py          # Pydantic data schemas
-│   │   ├── utils.py            # Utility functions (e.g., password hashing)
-│   │   └── requirements.txt    # Python dependencies for the backend
-│   ├── tests/                  # Automated tests for the API
-│   │   ├── conftest.py         # Pytest fixtures and test setup
-│   │   ├── test_prediction.py
-│   │   ├── test_user.py
-│   │   └── test_utils.py
-│   └── Notebook_1.py           # Jupyter Notebook for model training
-├── Saved_Models/               # Directory for the saved TensorFlow model
+│       └── ci.yml                       # GitHub Actions CI/CD workflow
+├── docker-compose.yml                   # Docker Compose for orchestrating services
+├── README.md                            # Project overview and setup instructions
+├── Notebook_1.ipynb                     # Jupyter Notebook for model training experiments
+├── PlantVillage/                        # Dataset for training
+│   ├── Potato___Early_blight/
+│   ├── Potato___Late_blight/
+│   └── Potato___healthy/
+├── Saved_Models/                        # Exported TensorFlow models
 │   └── 1/
-├── PlantVillage/               # Dataset for model training
-├── app_AfterAuthorization.py   # Streamlit frontend application
-├── Dockerfile                  # Dockerfile for the FastAPI backend
-├── .env                        # Environment variables (local, not committed)
-└── README.md
+│       ├── keras_metadata.pb
+│       ├── saved_model.pb
+│       └── variables/
+├── api/                                 # FastAPI backend
+│   ├── __pycache__/                     # Python bytecode cache (auto-generated)
+│   ├── config.py                        # Pydantic settings and environment config
+│   ├── database.py                      # Database connection logic
+│   ├── Dockerfile                       # Dockerfile for FastAPI app
+│   ├── main_OldVersion.py               # Old app version (can delete or archive)
+│   ├── main_Routers.py                  # Main FastAPI app with router inclusion
+│   ├── models.py                        # SQLAlchemy ORM models
+│   ├── oauth2.py                        # JWT creation/verification logic
+│   ├── queries.txt                      # Optional: saved SQL queries or drafts
+│   ├── requirements.txt                 # Backend dependencies
+│   ├── schemas.py                       # Pydantic request/response schemas
+│   ├── tempCodeRunnerFile.py           # Temporary file (safe to delete)
+│   ├── utils.py                         # Utility functions (e.g., hashing, token gen)
+│   └── routers/                         # API endpoint definitions
+│       ├── auth.py                      # Auth endpoints (login, register)
+│       ├── prediction.py                # Prediction endpoint (ML model inference)
+│       └── user.py                      # User management endpoints
+├── streamlit_app/                       # Streamlit frontend app
+│   ├── app_AfterAuthorization.py       # Authenticated UI for predictions
+│   ├── assets/
+│   │   └── farmland.jpg                 # Static image used in frontend
+│   └── requirements.txt                 # Streamlit-specific dependencies
+├── tests/                               # Pytest-based backend test suite
+│   ├── conftest.py                      # Fixtures and setup logic
+│   ├── test_predictions.py              # Tests for prediction API
+│   ├── test_users.py                    # Tests for user endpoints
+│   └── test_utils.py                    # Tests for utility functions
+
 ```
 ---
 
@@ -159,63 +174,29 @@ Follow these steps to get the project running on your local machine.
 
 ## Running the Application
 
-For simplicity and reliability, it is highly recommended to run the entire stack using Docker Compose. A `docker-compose.yml` file is the best practice for multi-container applications. While one is not provided, you can use the following `docker run` commands.
+1. **Launch the Backend Stack:**
+    In your terminal, from the project root (`Potato_Disease_Classification`), run the following command:
+    ```bash
+    docker-compose up --build
+    ```
+    This single command will build the API image and start all three backend containers (API, Database, Model Server). The API will be available at `http://localhost:8000`.
 
-*Note: These commands assume you have created a Docker network: `docker network create potato-net`*
+2.  **Run the Streamlit Frontend:**
+    Open a **new terminal window**. Navigate to the project directory and run:
+    ```bash
+    # (Optional) Create and activate a virtual environment
+    # python -m venv venv
+    # source venv/bin/activate
 
-### **1. Start TensorFlow Serving**
+    # Install dependencies
+    pip install streamlit requests Pillow
 
-Run the TF Serving container. Make sure the `source` path points to the correct location of your `Saved_Models` directory.
+    # Run the app on port 8502 to avoid conflict with TF Serving
+    streamlit run Potato_Disease_Classification/streamlit_app/app_AfterAuthorization.py --server.port 8502
+    ```
+    You can now access the web application at **`http://localhost:8502`**.
 
-```bash
-docker run -d --name tf-serving --network potato-net -p 8501:8501 \
---mount type=bind,source="$(pwd)/Saved_Models",target=/models/potato_disease_classifier \
--e MODEL_NAME=potato_disease_classifier -t tensorflow/serving
-```
-
-
-
-### **2. Start the PostgreSQL Database**
-
-Run the PostgreSQL container, passing the environment variables from your .env file.
-
-```bash
-docker run -d --name postgres-db --network potato-net -p 5432:5432 \
--e POSTGRES_USER=postgres \
--e POSTGRES_PASSWORD=your_strong_password \
--e POSTGRES_DB=potato_disease_db \
-postgres:13-alpine
-```
-
-### **3. Build and Run the FastAPI Application**
-
-Build the Docker image for the API and run the container.
-
-```bash
-# Build the image
-docker build -t potato-api .
-
-# Run the container, linking it to the network and providing the env file
-docker run -d --name fastapi-app --network potato-net -p 8000:8000 \
---env-file .env \
-potato-api
-```
-
-Once running, the API documentation will be available at http://localhost:8000/docs.
-
-### **4. Run the Streamlit Application**
-
-Install the Streamlit dependencies and run the app.
-
-```bash
-# Install dependencies
-pip install streamlit requests Pillow
-
-# Run the app
-streamlit run app_AfterAuthorization.py --server.port 8502
-```
-
-You can now access the web application at http://localhost:8502.
+---
 
 ## API Endpoints
 The API provides the following endpoints. Protected endpoints require a Bearer token in the Authorization header.
@@ -325,7 +306,7 @@ The classification model is a Convolutional Neural Network (CNN) built and train
 ---
 
 ## Testing and CI/CD
-The project emphasizes code quality and reliability through a comprehensive testing suite and a CI pipeline.
+The project emphasizes code quality through a comprehensive testing suite and a full CI/CD pipeline.
 
 ***Testing***
 
@@ -342,28 +323,13 @@ The project emphasizes code quality and reliability through a comprehensive test
 
 * Coverage: Tests cover user creation, user login (valid and invalid), password hashing, and prediction endpoints (unauthorized, successful prediction, and history retrieval).
 
-***Continuous Integration (CI)***
-* Platform: GitHub Actions.
-
-* Workflow (ci.yml):
-
-    1. Trigger: The workflow is automatically triggered on every push to the master branch if files in the api/, tests/, or .github/workflows/ directories are changed.
-
-    2. Jobs:
-
-        * test: A single job runs on an ubuntu-latest runner.
-
-        * Services: It spins up a postgres:13-alpine container to serve as the test database. Secrets are used to securely provide database credentials.
-
-        * Steps:
-
-            * Checks out the repository code.
-
-            * Sets up Python 3.9.
-
-            * Installs all required Python dependencies from requirements.txt and for testing.
-
-            * Runs pytest on the tests/ directory. Environment variables for the database connection, JWT secrets, and TF Serving URL (mocked) are provided to the test runner.
+**Continuous Integration & Delivery (CI/CD)**
+* **Platform**: GitHub Actions.
+* **Workflow (`ci.yml`)**:
+    1.  **Trigger**: The workflow runs automatically on every `push` or `pull_request` to the `master` branch.
+    2.  **Test Job**: It spins up a temporary PostgreSQL container, installs all dependencies, and runs the entire `pytest` suite to validate the code.
+    3.  **Build & Push Job**: If the tests pass, the workflow logs into Docker Hub, builds a new Docker image for the API, and pushes it with the `:latest` tag.
+    4.  **Deploy Job**: A placeholder `deploy` job demonstrates where deployment scripts to a production server would be placed. It runs only after a successful build on a push to `master`.
 
 ---
 
