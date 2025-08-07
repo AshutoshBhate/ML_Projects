@@ -38,3 +38,4 @@ c:\Users\ashut\ML_Projects\Potato_Disease_Classification\tests\test_predictions.
 c:\Users\ashut\ML_Projects\Potato_Disease_Classification\tests\test_users.py
 c:\Users\ashut\ML_Projects\Potato_Disease_Classification\tests\test_utils.py
 c:\Users\ashut\ML_Projects\.github\workflows\ci.yml
+c:\Users\ashut\ML_Projects\Potato_Disease_Classification\docker-compose.yml
