@@ -1,12 +1,20 @@
-# .github/workflows/ci.yml (Final Version with Deploy Step)
+# .github/workflows/ci.yml
 
 name: Test Build Push and Deploy API
 
 on:
   push:
     branches: [ master ]
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'Potato_Disease_Classification/api/**'
+      - 'Potato_Disease_Classification/tests/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - '.github/workflows/ci.yml'
+      - 'Potato_Disease_Classification/api/**'
+      - 'Potato_Disease_Classification/tests/**'
 
 jobs:
   build:
