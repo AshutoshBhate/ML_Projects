@@ -95,7 +95,7 @@ if st.session_state.token:
                         st.error(f"API Error: {e}")
 
     with col2:
-        st.header("📜 Your Prediction History")
+        st.header("Your Prediction History")
         
         if st.button("Refresh History"):
             headers = {"Authorization": f"Bearer {st.session_state.token}"}
@@ -124,4 +124,4 @@ if st.session_state.token:
                 st.error(f"API Error: {e}")
 
 else:
-    st.info("👋 Welcome! Please log in using the sidebar to access the classifier.")
+    st.info("Welcome! Please log in using the sidebar to access the classifier.")
