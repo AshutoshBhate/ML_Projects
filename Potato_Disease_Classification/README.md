@@ -19,7 +19,7 @@
 
 ---
 
-## 🔬 The Problem
+## The Problem
 
 Potato is the **world's 4th largest food crop**, and diseases like Early Blight and Late Blight cause billions of dollars in crop losses annually. Farmers often lack access to plant pathologists, and misidentifying a disease can lead to applying the wrong treatment — wasting money and losing yield.
 
@@ -27,7 +27,7 @@ Potato is the **world's 4th largest food crop**, and diseases like Early Blight 
 
 ---
 
-## 🏗 System Architecture
+## System Architecture
 
 The application is composed of four services that communicate in a microservices pattern:
 
@@ -98,7 +98,7 @@ flowchart TB
 
 ---
 
-## 🦠 Disease Classes
+## Disease Classes
 
 The model distinguishes between **3 classes** from the [PlantVillage](https://www.kaggle.com/datasets/arjuntejaswi/plant-village) dataset:
 
@@ -124,16 +124,16 @@ The model distinguishes between **3 classes** from the [PlantVillage](https://ww
 
 ### Dataset Distribution
 
-| Class | Samples | Percentage |
-|-------|---------|------------|
-| **Early Blight** | 1,000 | 46.4% |
-| **Late Blight** | 1,000 | 46.4% |
-| **Healthy** | 152 | 7.1% |
-| **Total** | **2,152** | 100% |
+| Class            | Samples   | Percentage |
+| ---------------- | --------- | ---------- |
+| **Early Blight** | 1,000     | 46.4%      |
+| **Late Blight**  | 1,000     | 46.4%      |
+| **Healthy**      | 152       | 7.1%       |
+| **Total**        | **2,152** | 100%       |
 
 ---
 
-## 📊 Model Performance
+## Model Performance
 
 ### CNN Architecture
 
@@ -175,48 +175,48 @@ flowchart LR
 
 ### Layer-by-Layer Breakdown
 
-| Layer | Type | Filters / Units | Activation | Output Shape |
-|-------|------|----------------|------------|-------------|
-| 1 | Conv2D | 32 (3×3) | ReLU | 254 × 254 × 32 |
-| 2 | MaxPooling2D | 2×2 | — | 127 × 127 × 32 |
-| 3 | Conv2D | 64 (3×3) | ReLU | 125 × 125 × 64 |
-| 4 | MaxPooling2D | 2×2 | — | 62 × 62 × 64 |
-| 5–12 | Conv2D + MaxPool ×4 | progressive | ReLU | downsampled |
-| 13 | Flatten | — | — | 1D vector |
-| 14 | Dense | 64 | ReLU | 64 |
-| 15 | Dense (Output) | 3 | Softmax | 3 |
+| Layer | Type                | Filters / Units | Activation | Output Shape   |
+| ----- | ------------------- | --------------- | ---------- | -------------- |
+| 1     | Conv2D              | 32 (3×3)        | ReLU       | 254 × 254 × 32 |
+| 2     | MaxPooling2D        | 2×2             | —          | 127 × 127 × 32 |
+| 3     | Conv2D              | 64 (3×3)        | ReLU       | 125 × 125 × 64 |
+| 4     | MaxPooling2D        | 2×2             | —          | 62 × 62 × 64   |
+| 5–12  | Conv2D + MaxPool ×4 | progressive     | ReLU       | downsampled    |
+| 13    | Flatten             | —               | —          | 1D vector      |
+| 14    | Dense               | 64              | ReLU       | 64             |
+| 15    | Dense (Output)      | 3               | Softmax    | 3              |
 
 ### Training Configuration
 
-| Parameter | Value |
-|-----------|-------|
-| **Optimizer** | Adam |
-| **Loss Function** | SparseCategoricalCrossentropy |
-| **Epochs** | 40 |
-| **Input Size** | 256 × 256 × 3 |
-| **Pixel Rescaling** | [0, 255] → [0, 1] |
+| Parameter             | Value                                             |
+| --------------------- | ------------------------------------------------- |
+| **Optimizer**         | Adam                                              |
+| **Loss Function**     | SparseCategoricalCrossentropy                     |
+| **Epochs**            | 40                                                |
+| **Input Size**        | 256 × 256 × 3                                     |
+| **Pixel Rescaling**   | [0, 255] → [0, 1]                                 |
 | **Data Augmentation** | Random horizontal/vertical flips, random rotation |
-| **Data Split** | 80% train / 10% validation / 10% test |
-| **Test Accuracy** | **~85.5%** |
+| **Data Split**        | 80% train / 10% validation / 10% test             |
+| **Test Accuracy**     | **~85.5%**                                        |
 
 ---
 
-## ✨ Features
+## Features
 
-| Feature | Description |
-|---------|-------------|
-| 🔐 **JWT Authentication** | Secure registration & login with bcrypt password hashing and HS256 JWT tokens (30-min TTL) |
-| 🧠 **CNN Disease Classification** | 3-class CNN distinguishing Early Blight, Late Blight, and Healthy leaves at ~85.5% accuracy |
-| 📜 **Prediction History** | Authenticated users can view chronologically sorted history of past predictions, linked to their account |
-| ⚡ **High-Performance API** | FastAPI with async endpoints, automatic OpenAPI docs at `/docs`, Pydantic validation |
-| 🖥️ **Interactive Web UI** | Streamlit frontend with image upload, real-time results, login/logout, and expandable history panels |
-| 🚀 **Scalable Model Serving** | TensorFlow Serving for production-grade, low-latency inference via REST API |
-| 🐳 **Docker Compose Orchestration** | Single `docker-compose up` spins up all 3 backend services (API, DB, TF Serving) |
-| 🧪 **Comprehensive Test Suite** | Pytest with fixtures for isolated test DB, mock TF Serving, and authorized client testing |
+| Feature                          | Description                                                                                              |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **JWT Authentication**           | Secure registration & login with bcrypt password hashing and HS256 JWT tokens (30-min TTL)               |
+| **CNN Disease Classification**   | 3-class CNN distinguishing Early Blight, Late Blight, and Healthy leaves at ~85.5% accuracy              |
+| **Prediction History**           | Authenticated users can view chronologically sorted history of past predictions, linked to their account |
+| **High-Performance API**         | FastAPI with async endpoints, automatic OpenAPI docs at `/docs`, Pydantic validation                     |
+| **Interactive Web UI**           | Streamlit frontend with image upload, real-time results, login/logout, and expandable history panels     |
+| **Scalable Model Serving**       | TensorFlow Serving for production-grade, low-latency inference via REST API                              |
+| **Docker Compose Orchestration** | Single `docker-compose up` spins up all 3 backend services (API, DB, TF Serving)                         |
+| **Comprehensive Test Suite**     | Pytest with fixtures for isolated test DB, mock TF Serving, and authorized client testing                |
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -283,7 +283,7 @@ Access the web app at **`http://localhost:8502`**.
 flowchart TB
     subgraph COMPOSE["🐳 docker-compose.yml"]
         direction TB
-        
+
         subgraph DB_SVC["db"]
             DB_IMG["postgres:13-alpine"]
             DB_VOL["Volume: postgres_data"]
@@ -314,43 +314,24 @@ flowchart TB
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 The FastAPI server auto-generates interactive documentation at **`http://localhost:8000/docs`**.
 
 ### Authentication
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/users/` | ❌ | Register a new user |
-| `POST` | `/login` | ❌ | Login and receive JWT token |
-| `GET` | `/users/{id}` | ❌ | Get user details by ID |
+| Method | Endpoint      | Auth | Description                 |
+| ------ | ------------- | ---- | --------------------------- |
+| `POST` | `/users/`     | ❌   | Register a new user         |
+| `POST` | `/login`      | ❌   | Login and receive JWT token |
+| `GET`  | `/users/{id}` | ❌   | Get user details by ID      |
 
 ### Predictions
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/predictions/` | 🔐 Bearer | Upload image → get classification result |
-| `GET` | `/predictions/` | 🔐 Bearer | Retrieve authenticated user's prediction history |
-
-### Example: Register → Login → Predict
-
-```bash
-# 1. Register
-curl -X POST http://localhost:8000/users/ \
-  -H "Content-Type: application/json" \
-  -d '{"email": "farmer@example.com", "password": "strongpass123"}'
-
-# 2. Login (returns JWT)
-curl -X POST http://localhost:8000/login \
-  -d "username=farmer@example.com&password=strongpass123"
-# → {"access_token": "eyJhbGci...", "token_type": "bearer"}
-
-# 3. Predict (with JWT)
-curl -X POST http://localhost:8000/predictions/ \
-  -H "Authorization: Bearer eyJhbGci..." \
-  -F "file=@potato_leaf.jpg"
-```
+| Method | Endpoint        | Auth      | Description                                      |
+| ------ | --------------- | --------- | ------------------------------------------------ |
+| `POST` | `/predictions/` | 🔐 Bearer | Upload image → get classification result         |
+| `GET`  | `/predictions/` | 🔐 Bearer | Retrieve authenticated user's prediction history |
 
 ### Sample Prediction Response
 
@@ -372,29 +353,29 @@ curl -X POST http://localhost:8000/predictions/ \
 
 ---
 
-## 🧠 How It Works
+## How It Works
 
 ### Image Preprocessing Pipeline
 
-| Step | Operation | Details |
-|------|-----------|---------|
-| 1 | **Read** | `PIL.Image.open(BytesIO(data))` — decode uploaded bytes |
-| 2 | **Convert** | `np.array(image)` — convert to NumPy array |
-| 3 | **Batch** | `np.expand_dims(image, 0)` — add batch dimension |
-| 4 | **Serialize** | `{"instances": batch.tolist()}` — JSON payload for TF Serving |
-| 5 | **Predict** | POST to TF Serving REST endpoint |
-| 6 | **Decode** | `np.argmax(predictions[0])` → map to `["Early Blight", "Late Blight", "Healthy"]` |
+| Step | Operation     | Details                                                                           |
+| ---- | ------------- | --------------------------------------------------------------------------------- |
+| 1    | **Read**      | `PIL.Image.open(BytesIO(data))` — decode uploaded bytes                           |
+| 2    | **Convert**   | `np.array(image)` — convert to NumPy array                                        |
+| 3    | **Batch**     | `np.expand_dims(image, 0)` — add batch dimension                                  |
+| 4    | **Serialize** | `{"instances": batch.tolist()}` — JSON payload for TF Serving                     |
+| 5    | **Predict**   | POST to TF Serving REST endpoint                                                  |
+| 6    | **Decode**    | `np.argmax(predictions[0])` → map to `["Early Blight", "Late Blight", "Healthy"]` |
 
 ### Authentication System
 
-| Component | Implementation |
-|-----------|---------------|
-| **Password Hashing** | `passlib[bcrypt]` — bcrypt with automatic salt |
-| **Token Format** | JWT (JSON Web Token) via `python-jose` |
-| **Signing Algorithm** | HS256 (HMAC-SHA256) |
-| **Token Lifetime** | 30 minutes (configurable via `.env`) |
-| **Token Transport** | `Authorization: Bearer <token>` header |
-| **User Lookup** | Decode token → extract `user_id` → query PostgreSQL |
+| Component             | Implementation                                      |
+| --------------------- | --------------------------------------------------- |
+| **Password Hashing**  | `passlib[bcrypt]` — bcrypt with automatic salt      |
+| **Token Format**      | JWT (JSON Web Token) via `python-jose`              |
+| **Signing Algorithm** | HS256 (HMAC-SHA256)                                 |
+| **Token Lifetime**    | 30 minutes (configurable via `.env`)                |
+| **Token Transport**   | `Authorization: Bearer <token>` header              |
+| **User Lookup**       | Decode token → extract `user_id` → query PostgreSQL |
 
 ### Database Schema
 
@@ -421,36 +402,36 @@ erDiagram
 
 ---
 
-## 🧪 Testing and CI/CD
+## Testing and CI/CD
 
 ### Test Infrastructure
 
-| Component | Details |
-|-----------|---------|
-| **Framework** | Pytest + pytest-mock |
-| **Test Database** | Isolated `{db_name}_test` database, reset per test function |
-| **TF Serving** | Mocked via `unittest.mock` — no model server needed for tests |
-| **Client** | FastAPI `TestClient` with dependency injection overrides |
+| Component         | Details                                                       |
+| ----------------- | ------------------------------------------------------------- |
+| **Framework**     | Pytest + pytest-mock                                          |
+| **Test Database** | Isolated `{db_name}_test` database, reset per test function   |
+| **TF Serving**    | Mocked via `unittest.mock` — no model server needed for tests |
+| **Client**        | FastAPI `TestClient` with dependency injection overrides      |
 
 ### Test Coverage
 
-| Test | What It Verifies |
-|------|-----------------|
-| `test_predict_unauthenticated` | Returns `401` when no JWT token is provided |
-| `test_predict_success` | Full prediction flow with mocked TF Serving returns correct class & confidence |
-| `test_get_prediction_history` | Predictions are stored and retrievable, linked to the correct user |
-| `test_create_user` | User creation returns `201` with correct response schema |
-| `test_login` | Valid credentials return a JWT access token |
-| `test_hash_password` | Bcrypt hashing and verification work correctly |
+| Test                           | What It Verifies                                                               |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| `test_predict_unauthenticated` | Returns `401` when no JWT token is provided                                    |
+| `test_predict_success`         | Full prediction flow with mocked TF Serving returns correct class & confidence |
+| `test_get_prediction_history`  | Predictions are stored and retrievable, linked to the correct user             |
+| `test_create_user`             | User creation returns `201` with correct response schema                       |
+| `test_login`                   | Valid credentials return a JWT access token                                    |
+| `test_hash_password`           | Bcrypt hashing and verification work correctly                                 |
 
 ### Fixtures (`conftest.py`)
 
-| Fixture | Purpose |
-|---------|---------|
-| `session` | Clean database session — drops & recreates all tables per test |
-| `client` | `TestClient` with overridden DB dependency |
-| `test_user` | Creates a user via the API and returns their data |
-| `authorized_client` | `TestClient` with a pre-set `Authorization: Bearer` header |
+| Fixture             | Purpose                                                        |
+| ------------------- | -------------------------------------------------------------- |
+| `session`           | Clean database session — drops & recreates all tables per test |
+| `client`            | `TestClient` with overridden DB dependency                     |
+| `test_user`         | Creates a user via the API and returns their data              |
+| `authorized_client` | `TestClient` with a pre-set `Authorization: Bearer` header     |
 
 ### Continuous Integration (CI/CD)
 
@@ -469,7 +450,7 @@ pytest tests/ -v
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 ML_Projects/
@@ -525,45 +506,33 @@ ML_Projects/
 
 ---
 
-## 🎯 Key Design Decisions
+## Key Design Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| **TensorFlow Serving over embedded model** | Decouples ML inference from business logic; scales independently; standard production pattern |
-| **JWT over session cookies** | Stateless authentication — no server-side session storage; works seamlessly across Streamlit ↔ FastAPI |
-| **PostgreSQL over SQLite** | Production-grade RDBMS with proper concurrency, type safety, and Docker-native support |
-| **Docker Compose orchestration** | Single command deploys the entire stack with correct startup ordering via `depends_on` + healthchecks |
-| **Pydantic v2 for schemas** | `ConfigDict(from_attributes=True)` for ORM mode; `EmailStr` for built-in email validation |
-| **Separate test database** | Tests run against `{db_name}_test` with per-function reset — zero interference with dev data |
-| **Mock TF Serving in tests** | Tests validate API logic without requiring a running model server; faster CI execution |
-| **6 Conv + MaxPool blocks** | Enough depth to capture texture and shape features of leaf diseases without overfitting on 2,152 images |
-
----
-
-## ⚙️ Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Deep Learning** | TensorFlow, Keras, TensorFlow Serving |
-| **Image Processing** | Pillow (PIL), NumPy |
-| **Backend API** | FastAPI, Uvicorn, Pydantic v2 |
-| **Database** | PostgreSQL 13, SQLAlchemy (ORM) |
-| **Authentication** | python-jose (JWT), passlib[bcrypt] |
-| **Frontend** | Streamlit |
-| **Containerization** | Docker, Docker Compose |
-| **Testing** | Pytest, pytest-mock, FastAPI TestClient |
+| Decision                                   | Rationale                                                                                               |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| **TensorFlow Serving over embedded model** | Decouples ML inference from business logic; scales independently; standard production pattern           |
+| **JWT over session cookies**               | Stateless authentication — no server-side session storage; works seamlessly across Streamlit ↔ FastAPI  |
+| **PostgreSQL over SQLite**                 | Production-grade RDBMS with proper concurrency, type safety, and Docker-native support                  |
+| **Docker Compose orchestration**           | Single command deploys the entire stack with correct startup ordering via `depends_on` + healthchecks   |
+| **Pydantic v2 for schemas**                | `ConfigDict(from_attributes=True)` for ORM mode; `EmailStr` for built-in email validation               |
+| **Separate test database**                 | Tests run against `{db_name}_test` with per-function reset — zero interference with dev data            |
+| **Mock TF Serving in tests**               | Tests validate API logic without requiring a running model server; faster CI execution                  |
+| **6 Conv + MaxPool blocks**                | Enough depth to capture texture and shape features of leaf diseases without overfitting on 2,152 images |
 
 ---
 
-## 🤝 Contributing
+## Tech Stack
 
-Contributions are welcome! If you have ideas, suggestions, or bug reports, please open an issue or submit a pull request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+| Layer                | Technology                              |
+| -------------------- | --------------------------------------- |
+| **Deep Learning**    | TensorFlow, Keras, TensorFlow Serving   |
+| **Image Processing** | Pillow (PIL), NumPy                     |
+| **Backend API**      | FastAPI, Uvicorn, Pydantic v2           |
+| **Database**         | PostgreSQL 13, SQLAlchemy (ORM)         |
+| **Authentication**   | python-jose (JWT), passlib[bcrypt]      |
+| **Frontend**         | Streamlit                               |
+| **Containerization** | Docker, Docker Compose                  |
+| **Testing**          | Pytest, pytest-mock, FastAPI TestClient |
 
 ---
 
