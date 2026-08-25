@@ -1,353 +1,580 @@
-# Potato Disease Classification Full-Stack Project
+# 🥔 Potato Disease Classification — Full-Stack AI-Powered Leaf Diagnosis
 
-![Python](https://img.shields.io/badge/Python-3.9-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.100.0-green.svg)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.25.0-red.svg)
-![Docker](https://img.shields.io/badge/Docker-24.0-blue.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-blue.svg)
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.25+-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-24.0+-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![CI/CD](https://github.com/AshutoshBhate/ML_Projects/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-This project is a complete full-stack application designed to classify potato diseases from leaf images. It features a deep learning model for classification, a high-performance RESTful API to serve the model, a secure user authentication system with JWT, and an interactive web interface for users. The entire system is containerized with Docker for easy deployment and includes a CI pipeline with GitHub Actions for automated testing.
+**A production-ready full-stack application that classifies potato leaf diseases using a CNN served via TensorFlow Serving, a FastAPI backend with JWT authentication, a PostgreSQL database for prediction history, and a Streamlit frontend — all orchestrated with Docker Compose.**
 
----
+[Architecture](#-system-architecture) · [Disease Classes](#-disease-classes) · [Results](#-model-performance) · [Getting Started](#-getting-started) · [API Reference](#-api-reference) · [How It Works](#-how-it-works)
 
-## Table of Contents
-- [Project Architecture](#project-architecture)
-- [Features](#features)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Setup and Installation](#setup-and-installation)
-- [Running the Application](#running-the-application)
-- [API Endpoints](#api-endpoints)
-- [Machine Learning Model](#machine-learning-model)
-- [Testing and CI/CD](#testing-and-cicd)
-- [Contributing](#contributing)
-- [License](#license)
+</div>
 
 ---
 
-## Project Architecture
+## 🔬 The Problem
 
-The application is composed of four main services that work together:
+Potato is the **world's 4th largest food crop**, and diseases like Early Blight and Late Blight cause billions of dollars in crop losses annually. Farmers often lack access to plant pathologists, and misidentifying a disease can lead to applying the wrong treatment — wasting money and losing yield.
 
-1.  **Streamlit Frontend**: The user-facing web application where users can register, log in, upload potato leaf images for classification, and view their personal prediction history.
-2.  **FastAPI Backend**: The core of the application. It handles user authentication, manages user data, processes prediction requests, and interacts with the database. It is the central orchestrator.
-3.  **TensorFlow Serving**: A dedicated, high-performance server that hosts the trained CNN model and handles the computational-heavy task of running inference on the uploaded images.
-4.  **PostgreSQL Database**: A relational database that stores user credentials and a history of all predictions made by each user.
-
-The typical user flow is as follows:
-- A user registers or logs in via the Streamlit interface.
-- The FastAPI backend validates the credentials and returns a JWT access token.
-- For subsequent requests (like making a prediction), the Streamlit app sends the image and the JWT token to the FastAPI backend.
-- The backend validates the token, preprocesses the image, and sends it to the TensorFlow Serving container for a prediction.
-- TF Serving returns the prediction result (class and confidence) to the backend.
-- The backend saves the prediction result to the PostgreSQL database, linked to the user's ID.
-- The result is sent back to the Streamlit app and displayed to the user.
+**Our solution:** Upload a photo of a potato leaf and get an instant, accurate diagnosis. The system classifies leaves into **Early Blight**, **Late Blight**, or **Healthy** — complete with confidence scores, prediction history tracking, and user authentication.
 
 ---
 
-## Features
+## 🏗 System Architecture
 
-* **Secure User Authentication**: Robust user registration and login system using JWT (JSON Web Tokens) for secure API access. Passwords are securely hashed using `bcrypt`.
-* **Accurate Disease Classification**: A Convolutional Neural Network (CNN) distinguishes between "Early Blight," "Late Blight," and "Healthy" potato leaves with high accuracy.
-* **Personalized Prediction History**: Authenticated users can view a chronologically sorted history of their past predictions.
-* **High-Performance RESTful API**: A fully-featured API built with FastAPI, providing endpoints for user management, authentication, and predictions. Includes automatic interactive documentation (via `/docs`).
-* **Interactive Web Interface**: A clean and user-friendly frontend built with Streamlit, enabling easy image uploads and clear presentation of results.
-* **Scalable Model Serving**: The TensorFlow model is served using TensorFlow Serving, ensuring low latency and high throughput for predictions.
-* **Continuous Integration (CI)**: A GitHub Actions workflow automatically runs tests against the API on every push to the `master` branch, ensuring code quality and stability.
-* **Containerized Deployment**: The entire application stack (FastAPI, PostgreSQL) is defined for containerized environments, ensuring consistency and ease of deployment.
+The application is composed of four services that communicate in a microservices pattern:
+
+```mermaid
+flowchart LR
+    subgraph CLIENT["🖥️ Frontend"]
+        A["Streamlit App\n(Port 8502)"]
+    end
+
+    subgraph API["⚙️ Backend"]
+        B["FastAPI Server\n(Port 8000)"]
+    end
+
+    subgraph ML["🧠 Model Server"]
+        C["TensorFlow Serving\n(Port 8501)"]
+    end
+
+    subgraph DB["🗄️ Database"]
+        D["PostgreSQL 13\n(Port 5432)"]
+    end
+
+    A -- "1. Upload Image\n+ JWT Token" --> B
+    B -- "2. Preprocessed\nImage Batch" --> C
+    C -- "3. Class Probabilities\n[0.1, 0.85, 0.05]" --> B
+    B -- "4. Save Prediction\n(user_id, class, conf)" --> D
+    B -- "5. Return Result\n+ Confidence" --> A
+
+    style CLIENT fill:#1a1a2e,stroke:#FF4B4B,color:#e2e8f0
+    style API fill:#1a1a2e,stroke:#009688,color:#e2e8f0
+    style ML fill:#1a1a2e,stroke:#FF6F00,color:#e2e8f0
+    style DB fill:#1a1a2e,stroke:#4169E1,color:#e2e8f0
+```
+
+### Detailed Request Flow
+
+```mermaid
+flowchart TB
+    subgraph AUTH["🔐 Authentication Flow"]
+        direction LR
+        REG["POST /users/\nRegister"] --> LOGIN["POST /login\nGet JWT Token"]
+        LOGIN --> TOKEN["JWT Access Token\n(HS256, 30min TTL)"]
+    end
+
+    subgraph PREDICT["🔬 Prediction Flow"]
+        direction LR
+        UPLOAD["Upload Leaf Image\n(JPG/PNG)"] --> PREPROCESS["Read & Convert\nto NumPy Array"]
+        PREPROCESS --> BATCH["Expand Dims\n→ Batch of 1"]
+        BATCH --> TFSERVE["POST to\nTF Serving REST API"]
+        TFSERVE --> ARGMAX["np.argmax()\n→ Class Index"]
+        ARGMAX --> SAVE["Save to PostgreSQL\n(filename, class, confidence, user_id)"]
+        SAVE --> RESPOND["Return\nPredictionResult"]
+    end
+
+    subgraph HISTORY["📜 History Flow"]
+        direction LR
+        FETCH["GET /predictions/\n+ Bearer Token"] --> QUERY["Filter by\ncurrent_user.id"]
+        QUERY --> ORDER["Order by\ntimestamp DESC"]
+        ORDER --> RETURN["Return List of\nPredictionResults"]
+    end
+
+    TOKEN -.-> PREDICT
+    TOKEN -.-> HISTORY
+
+    style AUTH fill:#0f0c29,stroke:#ed8936,color:#e2e8f0
+    style PREDICT fill:#0f0c29,stroke:#38b2ac,color:#e2e8f0
+    style HISTORY fill:#0f0c29,stroke:#667eea,color:#e2e8f0
+```
 
 ---
 
-## Technology Stack
+## 🦠 Disease Classes
 
-| Category          | Technology                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Frontend** | [Streamlit](https://streamlit.io/)                                                                          |
-| **Backend** | [FastAPI](https://fastapi.tiangolo.com/), [Uvicorn](https://www.uvicorn.org/)                                 |
-| **Machine Learning**| [TensorFlow](https://www.tensorflow.org/), [TensorFlow Serving](https://www.tensorflow.org/tfx/guide/serving), [Pillow](https://pillow.readthedocs.io/en/stable/), [NumPy](https://numpy.org/) |
-| **Database** | [PostgreSQL](https://www.postgresql.org/), [SQLAlchemy](https://www.sqlalchemy.org/) (ORM)                  |
-| **Authentication**| [python-jose](https://github.com/mpdavis/python-jose) (for JWT), [passlib[bcrypt]](https://passlib.readthedocs.io/en/stable/) (for Hashing) |
-| **Data Validation** | [Pydantic](https://docs.pydantic.dev/latest/)                                                               |
-| **Testing** | [Pytest](https://docs.pytest.org/), [pytest-mock](https://pytest-mock.readthedocs.io/)                       |
-| **Deployment & CI/CD** | [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/), [GitHub Actions](https://github.com/features/actions) |
+The model distinguishes between **3 classes** from the [PlantVillage](https://www.kaggle.com/datasets/arjuntejaswi/plant-village) dataset:
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>🟤 Early Blight</b></td>
+      <td align="center"><b>⬛ Late Blight</b></td>
+      <td align="center"><b>🟢 Healthy</b></td>
+    </tr>
+    <tr>
+      <td><img src="PlantVillage/Potato___Early_blight/001187a0-57ab-4329-baff-e7246a9edeb0___RS_Early.B%208178.JPG" width="220"/></td>
+      <td><img src="PlantVillage/Potato___Late_blight/0051e5e8-d1c4-4a84-bf3a-a426cdad6285___RS_LB%204640.JPG" width="220"/></td>
+      <td><img src="PlantVillage/Potato___healthy/00fc2ee5-729f-4757-8aeb-65c3355874f2___RS_HL%201864.JPG" width="220"/></td>
+    </tr>
+    <tr>
+      <td align="center"><em>Concentric ring lesions<br/>caused by Alternaria solani</em></td>
+      <td align="center"><em>Dark, water-soaked patches<br/>caused by Phytophthora infestans</em></td>
+      <td align="center"><em>Uniform green color<br/>with no visible lesions</em></td>
+    </tr>
+  </table>
+</div>
+
+### Dataset Distribution
+
+| Class | Samples | Percentage |
+|-------|---------|------------|
+| **Early Blight** | 1,000 | 46.4% |
+| **Late Blight** | 1,000 | 46.4% |
+| **Healthy** | 152 | 7.1% |
+| **Total** | **2,152** | 100% |
 
 ---
 
-## Project Structure
+## 📊 Model Performance
 
-The repository is organized as follows to maintain a clean separation of concerns:
+### CNN Architecture
+
+The classification model is a custom Convolutional Neural Network built with TensorFlow/Keras:
+
+```mermaid
+flowchart LR
+    subgraph INPUT["📥 Input"]
+        I["Potato Leaf\n256 × 256 × 3"]
+    end
+
+    subgraph AUGMENT["🔄 Augmentation"]
+        AUG["Random Flip\n+ Random Rotation"]
+    end
+
+    subgraph CONV["🧱 Feature Extraction (6 Blocks)"]
+        C1["Conv2D\n32 filters"] --> P1["MaxPool\n2×2"]
+        P1 --> C2["Conv2D\n64 filters"] --> P2["MaxPool\n2×2"]
+        P2 --> C3["Conv2D → Conv2D → Conv2D → Conv2D\n+ MaxPool each"]
+    end
+
+    subgraph HEAD["🎯 Classifier Head"]
+        F["Flatten"] --> D1["Dense\n64 units\nReLU"]
+        D1 --> D2["Dense\n3 units\nSoftmax"]
+    end
+
+    subgraph OUT["📋 Output"]
+        O["Early Blight\nLate Blight\nHealthy"]
+    end
+
+    I --> AUG --> CONV --> HEAD --> OUT
+
+    style INPUT fill:#1a1a2e,stroke:#667eea,color:#e2e8f0
+    style AUGMENT fill:#1a1a2e,stroke:#ed8936,color:#e2e8f0
+    style CONV fill:#1a1a2e,stroke:#764ba2,color:#e2e8f0
+    style HEAD fill:#1a1a2e,stroke:#38b2ac,color:#e2e8f0
+    style OUT fill:#1a1a2e,stroke:#68d391,color:#e2e8f0
+```
+
+### Layer-by-Layer Breakdown
+
+| Layer | Type | Filters / Units | Activation | Output Shape |
+|-------|------|----------------|------------|-------------|
+| 1 | Conv2D | 32 (3×3) | ReLU | 254 × 254 × 32 |
+| 2 | MaxPooling2D | 2×2 | — | 127 × 127 × 32 |
+| 3 | Conv2D | 64 (3×3) | ReLU | 125 × 125 × 64 |
+| 4 | MaxPooling2D | 2×2 | — | 62 × 62 × 64 |
+| 5–12 | Conv2D + MaxPool ×4 | progressive | ReLU | downsampled |
+| 13 | Flatten | — | — | 1D vector |
+| 14 | Dense | 64 | ReLU | 64 |
+| 15 | Dense (Output) | 3 | Softmax | 3 |
+
+### Training Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| **Optimizer** | Adam |
+| **Loss Function** | SparseCategoricalCrossentropy |
+| **Epochs** | 40 |
+| **Input Size** | 256 × 256 × 3 |
+| **Pixel Rescaling** | [0, 255] → [0, 1] |
+| **Data Augmentation** | Random horizontal/vertical flips, random rotation |
+| **Data Split** | 80% train / 10% validation / 10% test |
+| **Test Accuracy** | **~85.5%** |
+
+---
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔐 **JWT Authentication** | Secure registration & login with bcrypt password hashing and HS256 JWT tokens (30-min TTL) |
+| 🧠 **CNN Disease Classification** | 3-class CNN distinguishing Early Blight, Late Blight, and Healthy leaves at ~85.5% accuracy |
+| 📜 **Prediction History** | Authenticated users can view chronologically sorted history of past predictions, linked to their account |
+| ⚡ **High-Performance API** | FastAPI with async endpoints, automatic OpenAPI docs at `/docs`, Pydantic validation |
+| 🖥️ **Interactive Web UI** | Streamlit frontend with image upload, real-time results, login/logout, and expandable history panels |
+| 🚀 **Scalable Model Serving** | TensorFlow Serving for production-grade, low-latency inference via REST API |
+| 🐳 **Docker Compose Orchestration** | Single `docker-compose up` spins up all 3 backend services (API, DB, TF Serving) |
+| 🧪 **Comprehensive Test Suite** | Pytest with fixtures for isolated test DB, mock TF Serving, and authorized client testing |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- [Docker](https://www.docker.com/products/docker-desktop) & [Docker Compose](https://docs.docker.com/compose/install/) installed and running
+- [Git](https://git-scm.com/) for cloning the repository
+- Python 3.9+ (for running the Streamlit app locally)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/AshutoshBhate/ML_Projects.git
+cd ML_Projects/Potato_Disease_Classification
+```
+
+### Environment Configuration
+
+Create a `.env` file in the project root:
+
+```env
+# ──── Database ────
+DATABASE_HOSTNAME=db                # Docker Compose service name
+DATABASE_PORT=5432
+DATABASE_PASSWORD=your_strong_password
+DATABASE_NAME=potato_disease_db
+DATABASE_USERNAME=postgres
+
+# ──── TensorFlow Serving ────
+TF_SERVING_URL=http://tf-serving:8501/v1/models/potato_disease_classifier:predict
+
+# ──── JWT Authentication ────
+SECRET_KEY=generate_a_strong_random_32_byte_hex_string
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
+
+> **Tip:** Generate a secure `SECRET_KEY` with: `openssl rand -hex 32`
+
+### Launch the Application
+
+**1. Start the backend stack (API + Database + Model Server):**
+
+```bash
+docker-compose up --build
+```
+
+This starts all three services. The API will be available at **`http://localhost:8000`**.
+
+**2. Start the Streamlit frontend (separate terminal):**
+
+```bash
+# Install Streamlit dependencies
+pip install streamlit requests Pillow
+
+# Launch on port 8502
+streamlit run streamlit_app/app_AfterAuthorization.py --server.port 8502
+```
+
+Access the web app at **`http://localhost:8502`**.
+
+### Docker Compose Services
+
+```mermaid
+flowchart TB
+    subgraph COMPOSE["🐳 docker-compose.yml"]
+        direction TB
+        
+        subgraph DB_SVC["db"]
+            DB_IMG["postgres:13-alpine"]
+            DB_VOL["Volume: postgres_data"]
+            DB_HC["Healthcheck: pg_isready"]
+        end
+
+        subgraph TF_SVC["tf-serving"]
+            TF_IMG["tensorflow/serving:latest"]
+            TF_PORT["Port: 8501:8501"]
+            TF_MODEL["Mount: ./Saved_Models/"]
+        end
+
+        subgraph API_SVC["api"]
+            API_IMG["python:3.9-slim-buster"]
+            API_PORT["Port: 8000:8000"]
+            API_ENV["Env: .env file"]
+        end
+    end
+
+    API_SVC -- "depends_on\n(service_healthy)" --> DB_SVC
+    API_SVC -- "depends_on\n(service_started)" --> TF_SVC
+
+    style COMPOSE fill:#0f0c29,stroke:#2496ED,color:#e2e8f0
+    style DB_SVC fill:#1a1a2e,stroke:#4169E1,color:#e2e8f0
+    style TF_SVC fill:#1a1a2e,stroke:#FF6F00,color:#e2e8f0
+    style API_SVC fill:#1a1a2e,stroke:#009688,color:#e2e8f0
+```
+
+---
+
+## 📡 API Reference
+
+The FastAPI server auto-generates interactive documentation at **`http://localhost:8000/docs`**.
+
+### Authentication
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/users/` | ❌ | Register a new user |
+| `POST` | `/login` | ❌ | Login and receive JWT token |
+| `GET` | `/users/{id}` | ❌ | Get user details by ID |
+
+### Predictions
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/predictions/` | 🔐 Bearer | Upload image → get classification result |
+| `GET` | `/predictions/` | 🔐 Bearer | Retrieve authenticated user's prediction history |
+
+### Example: Register → Login → Predict
+
+```bash
+# 1. Register
+curl -X POST http://localhost:8000/users/ \
+  -H "Content-Type: application/json" \
+  -d '{"email": "farmer@example.com", "password": "strongpass123"}'
+
+# 2. Login (returns JWT)
+curl -X POST http://localhost:8000/login \
+  -d "username=farmer@example.com&password=strongpass123"
+# → {"access_token": "eyJhbGci...", "token_type": "bearer"}
+
+# 3. Predict (with JWT)
+curl -X POST http://localhost:8000/predictions/ \
+  -H "Authorization: Bearer eyJhbGci..." \
+  -F "file=@potato_leaf.jpg"
+```
+
+### Sample Prediction Response
+
+```json
+{
+  "id": 1,
+  "timestamp": "2025-08-07T12:05:00.000Z",
+  "user_id": 1,
+  "filename": "leaf.jpg",
+  "predicted_class": "Late Blight",
+  "confidence": 0.985,
+  "owner": {
+    "id": 1,
+    "email": "farmer@example.com",
+    "created_at": "2025-08-07T12:00:00.000Z"
+  }
+}
+```
+
+---
+
+## 🧠 How It Works
+
+### Image Preprocessing Pipeline
+
+| Step | Operation | Details |
+|------|-----------|---------|
+| 1 | **Read** | `PIL.Image.open(BytesIO(data))` — decode uploaded bytes |
+| 2 | **Convert** | `np.array(image)` — convert to NumPy array |
+| 3 | **Batch** | `np.expand_dims(image, 0)` — add batch dimension |
+| 4 | **Serialize** | `{"instances": batch.tolist()}` — JSON payload for TF Serving |
+| 5 | **Predict** | POST to TF Serving REST endpoint |
+| 6 | **Decode** | `np.argmax(predictions[0])` → map to `["Early Blight", "Late Blight", "Healthy"]` |
+
+### Authentication System
+
+| Component | Implementation |
+|-----------|---------------|
+| **Password Hashing** | `passlib[bcrypt]` — bcrypt with automatic salt |
+| **Token Format** | JWT (JSON Web Token) via `python-jose` |
+| **Signing Algorithm** | HS256 (HMAC-SHA256) |
+| **Token Lifetime** | 30 minutes (configurable via `.env`) |
+| **Token Transport** | `Authorization: Bearer <token>` header |
+| **User Lookup** | Decode token → extract `user_id` → query PostgreSQL |
+
+### Database Schema
+
+```mermaid
+erDiagram
+    USERS {
+        int id PK "auto-increment"
+        string email UK "unique, not null"
+        string password "bcrypt hash"
+        datetime created_at "server default: now()"
+    }
+
+    PREDICTION_RESULTS {
+        int id PK "auto-increment"
+        string filename "original upload name"
+        string predicted_class "Early Blight | Late Blight | Healthy"
+        float confidence "0.0 to 1.0"
+        datetime timestamp "server default: now()"
+        int user_id FK "CASCADE on delete"
+    }
+
+    USERS ||--o{ PREDICTION_RESULTS : "owns"
+```
+
+---
+
+## 🧪 Testing and CI/CD
+
+### Test Infrastructure
+
+| Component | Details |
+|-----------|---------|
+| **Framework** | Pytest + pytest-mock |
+| **Test Database** | Isolated `{db_name}_test` database, reset per test function |
+| **TF Serving** | Mocked via `unittest.mock` — no model server needed for tests |
+| **Client** | FastAPI `TestClient` with dependency injection overrides |
+
+### Test Coverage
+
+| Test | What It Verifies |
+|------|-----------------|
+| `test_predict_unauthenticated` | Returns `401` when no JWT token is provided |
+| `test_predict_success` | Full prediction flow with mocked TF Serving returns correct class & confidence |
+| `test_get_prediction_history` | Predictions are stored and retrievable, linked to the correct user |
+| `test_create_user` | User creation returns `201` with correct response schema |
+| `test_login` | Valid credentials return a JWT access token |
+| `test_hash_password` | Bcrypt hashing and verification work correctly |
+
+### Fixtures (`conftest.py`)
+
+| Fixture | Purpose |
+|---------|---------|
+| `session` | Clean database session — drops & recreates all tables per test |
+| `client` | `TestClient` with overridden DB dependency |
+| `test_user` | Creates a user via the API and returns their data |
+| `authorized_client` | `TestClient` with a pre-set `Authorization: Bearer` header |
+
+### Continuous Integration (CI/CD)
+
+The project uses a **GitHub Actions** workflow (`ci.yml`) that automatically runs on every `push` or `pull_request` to the `master` branch to ensure code quality and stability.
+
+1. **Test Job**: Spins up a temporary PostgreSQL container, installs dependencies, and runs the entire `pytest` suite.
+2. **Build & Push Job**: Upon passing tests, builds a new Docker image for the API and pushes it to Docker Hub with the `:latest` tag.
+3. **Deploy Job**: Contains placeholder steps demonstrating deployment to a production server after successful build.
+
+### Running Tests Locally
+
+```bash
+# From project root
+pytest tests/ -v
+```
+
+---
+
+## 📁 Project Structure
 
 ```
-Potato_Disease_Classification/
-├── .env                                 # Local environment variables (add to .gitignore)
+ML_Projects/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                       # GitHub Actions CI/CD workflow
-├── docker-compose.yml                   # Docker Compose for orchestrating services
-├── README.md                            # Project overview and setup instructions
-├── Notebook_1.ipynb                     # Jupyter Notebook for model training experiments
-├── PlantVillage/                        # Dataset for training
-│   ├── Potato___Early_blight/
-│   ├── Potato___Late_blight/
-│   └── Potato___healthy/
-├── Saved_Models/                        # Exported TensorFlow models
-│   └── 1/
-│       ├── keras_metadata.pb
-│       ├── saved_model.pb
-│       └── variables/
-├── api/                                 # FastAPI backend
-│   ├── __pycache__/                     # Python bytecode cache (auto-generated)
-│   ├── config.py                        # Pydantic settings and environment config
-│   ├── database.py                      # Database connection logic
-│   ├── Dockerfile                       # Dockerfile for FastAPI app
-│   ├── main_OldVersion.py               # Old app version (can delete or archive)
-│   ├── main_Routers.py                  # Main FastAPI app with router inclusion
-│   ├── models.py                        # SQLAlchemy ORM models
-│   ├── oauth2.py                        # JWT creation/verification logic
-│   ├── queries.txt                      # Optional: saved SQL queries or drafts
-│   ├── requirements.txt                 # Backend dependencies
-│   ├── schemas.py                       # Pydantic request/response schemas
-│   ├── tempCodeRunnerFile.py           # Temporary file (safe to delete)
-│   ├── utils.py                         # Utility functions (e.g., hashing, token gen)
-│   └── routers/                         # API endpoint definitions
-│       ├── auth.py                      # Auth endpoints (login, register)
-│       ├── prediction.py                # Prediction endpoint (ML model inference)
-│       └── user.py                      # User management endpoints
-├── streamlit_app/                       # Streamlit frontend app
-│   ├── app_AfterAuthorization.py       # Authenticated UI for predictions
-│   ├── assets/
-│   │   └── farmland.jpg                 # Static image used in frontend
-│   └── requirements.txt                 # Streamlit-specific dependencies
-├── tests/                               # Pytest-based backend test suite
-│   ├── conftest.py                      # Fixtures and setup logic
-│   ├── test_predictions.py              # Tests for prediction API
-│   ├── test_users.py                    # Tests for user endpoints
-│   └── test_utils.py                    # Tests for utility functions
-
+│       └── ci.yml                          ← GitHub Actions CI/CD workflow
+└── Potato_Disease_Classification/
+    ├── README.md                           ← You are here
+    ├── docker-compose.yml                  ← Orchestrates API + DB + TF Serving
+    ├── .env                                ← Environment variables (not committed)
+    ├── Notebook_1.ipynb                    ← Model training & experimentation
+    ├── Fundamentals_PotatoDisease.md       ← Background research notes
+    │
+    ├── PlantVillage/                       ← Training dataset (2,152 images)
+    │   ├── Potato___Early_blight/          ← 1,000 images
+    │   ├── Potato___Late_blight/           ← 1,000 images
+    │   └── Potato___healthy/               ← 152 images
+    │
+    ├── Saved_Models/                       ← Exported TF SavedModel format
+    │   └── 1/
+    │       ├── saved_model.pb              ← Model graph definition
+    │       ├── keras_metadata.pb           ← Keras layer metadata
+    │       └── variables/                  ← Trained weights
+    │
+    ├── api/                                ← FastAPI backend
+    │   ├── main_Routers.py                 ← App entry point, CORS, router inclusion
+    │   ├── config.py                       ← Pydantic settings (reads .env)
+    │   ├── database.py                     ← SQLAlchemy engine & session
+    │   ├── models.py                       ← ORM models (User, PredictionResult)
+    │   ├── schemas.py                      ← Pydantic request/response schemas
+    │   ├── oauth2.py                       ← JWT creation & verification
+    │   ├── utils.py                        ← Password hashing utilities
+    │   ├── Dockerfile                      ← Container image for the API
+    │   ├── requirements.txt                ← Backend Python dependencies
+    │   └── routers/
+    │       ├── auth.py                     ← POST /login
+    │       ├── user.py                     ← POST /users/, GET /users/{id}
+    │       └── prediction.py               ← POST /predictions/, GET /predictions/
+    │
+    ├── streamlit_app/                      ← Streamlit frontend
+    │   ├── app_AfterAuthorization.py       ← Main app (login + predict + history)
+    │   ├── app_BeforeAuthorization.py      ← Earlier version (no auth)
+    │   ├── requirements.txt                ← Frontend dependencies
+    │   └── assets/
+    │       └── farmland.jpg                ← Background/hero image
+    │
+    └── tests/                              ← Pytest test suite
+        ├── conftest.py                     ← Fixtures (session, client, test_user)
+        ├── test_users.py                   ← User creation & login tests
+        ├── test_predictions.py             ← Prediction & history tests
+        └── test_utils.py                   ← Utility function tests
 ```
----
-
-## Setup and Installation
-
-Follow these steps to get the project running on your local machine.
-
-### **Prerequisites**
-
-* [Docker](https://www.docker.com/products/docker-desktop) and [Docker Compose](https://docs.docker.com/compose/install/) installed and running.
-* [Git](https://git-scm.com/) for cloning the repository.
-* Python 3.9+ for running the Streamlit app locally.
-
-### **Installation Steps**
-
-1.  **Clone the repository:**
-    ```bash
-    git clone [https://github.com/your-username/potato-disease-classification.git](https://github.com/your-username/potato-disease-classification.git)
-    cd potato-disease-classification
-    ```
-
-2.  **Create the environment file:**
-    Create a file named `.env` in the project root directory. Copy the contents of the example below and replace the placeholder values with your own settings.
-
-    **.env.example:**
-    ```env
-    # Database Configuration for FastAPI and Tests
-    DATABASE_HOSTNAME=postgres-db # Use the service name if using Docker Compose
-    DATABASE_PORT=5432
-    DATABASE_PASSWORD=your_strong_password
-    DATABASE_NAME=potato_disease_db
-    DATABASE_USERNAME=postgres
-
-    # TensorFlow Serving URL
-    # Use 'host.docker.internal' if TF Serving runs on host and API in a container
-    # Use the service name (e.g., 'tf-serving') if using Docker Compose
-    TF_SERVING_URL=http://tf-serving:8501/v1/models/potato_disease_classifier:predict
-
-    # JWT Authentication Configuration
-    SECRET_KEY=generate_a_strong_random_32_byte_hex_string
-    ALGORITHM=HS256
-    ACCESS_TOKEN_EXPIRE_MINUTES=30
-    ```
-    **Note**: You can generate a `SECRET_KEY` with `openssl rand -hex 32`.
 
 ---
 
-## Running the Application
+## 🎯 Key Design Decisions
 
-1. **Launch the Backend Stack:**
-    In your terminal, from the project root (`Potato_Disease_Classification`), run the following command:
-    ```bash
-    docker-compose up --build
-    ```
-    This single command will build the API image and start all three backend containers (API, Database, Model Server). The API will be available at `http://localhost:8000`.
-
-2.  **Run the Streamlit Frontend:**
-    Open a **new terminal window**. Navigate to the project directory and run:
-    ```bash
-    # (Optional) Create and activate a virtual environment
-    # python -m venv venv
-    # source venv/bin/activate
-
-    # Install dependencies
-    pip install streamlit requests Pillow
-
-    # Run the app on port 8502 to avoid conflict with TF Serving
-    streamlit run Potato_Disease_Classification/streamlit_app/app_AfterAuthorization.py --server.port 8502
-    ```
-    You can now access the web application at **`http://localhost:8502`**.
+| Decision | Rationale |
+|----------|-----------|
+| **TensorFlow Serving over embedded model** | Decouples ML inference from business logic; scales independently; standard production pattern |
+| **JWT over session cookies** | Stateless authentication — no server-side session storage; works seamlessly across Streamlit ↔ FastAPI |
+| **PostgreSQL over SQLite** | Production-grade RDBMS with proper concurrency, type safety, and Docker-native support |
+| **Docker Compose orchestration** | Single command deploys the entire stack with correct startup ordering via `depends_on` + healthchecks |
+| **Pydantic v2 for schemas** | `ConfigDict(from_attributes=True)` for ORM mode; `EmailStr` for built-in email validation |
+| **Separate test database** | Tests run against `{db_name}_test` with per-function reset — zero interference with dev data |
+| **Mock TF Serving in tests** | Tests validate API logic without requiring a running model server; faster CI execution |
+| **6 Conv + MaxPool blocks** | Enough depth to capture texture and shape features of leaf diseases without overfitting on 2,152 images |
 
 ---
 
-## API Endpoints
-The API provides the following endpoints. Protected endpoints require a Bearer token in the Authorization header.
+## ⚙️ Tech Stack
 
-**Authentication**
-* POST /login: Authenticates a user and returns a JWT access token.
-
-    * Request Body (form-data):
-
-    ```JSON
-    {
-        "username": "user@example.com",
-        "password": "password123"
-    }
-    ```
-
-    * Response (200 OK):
-
-    ```JSON
-    {
-        "access_token": "your.jwt.token",
-        "token_type": "bearer"
-    }
-    ```
-
-**Users** 
-* POST /users/: Creates a new user.
-
-    * Request Body:
-
-    ```JSON
-    {
-        "email": "newuser@example.com",
-        "password": "a_strong_password"
-    }
-    ```
-
-    * Response (201 Created):
-    
-    ```JSON
-    {
-        "id": 1,
-        "email": "newuser@example.com",
-        "created_at": "2025-08-07T12:00:00.000Z"
-    }
-
-* GET /users/{id}: Retrieves details for a specific user.
-
-    * Response (200 OK): (Same as user creation response)
-
-***Predictions***
-* POST /predictions/ (Protected): Submits an image for classification and saves the result.
-
-    * Request Body (multipart/form-data): An image file (file).
-    * Response (200 OK):
-
-    ```JSON
-    {
-        "id": 1,
-        "timestamp": "2025-08-07T12:05:00.000Z",
-        "user_id": 1,
-        "filename": "leaf.jpg",
-        "predicted_class": "Late Blight",
-        "confidence": 0.985,
-        "owner": {
-            "id": 1,
-            "email": "user@example.com",
-            "created_at": "2025-08-07T12:00:00.000Z"
-        }
-    }
-    
-* GET /predictions/ (Protected): Retrieves the prediction history for the authenticated user.
-
-    * Response (200 OK): A list of prediction result objects.
-
-## Machine Learning Model
-The classification model is a Convolutional Neural Network (CNN) built and trained using TensorFlow. The entire process is documented in Notebook_1.py.
-
-* Dataset: The model was trained on the PlantVillage dataset, which contains images of healthy and diseased potato leaves across 3 classes.
-
-* Data Preprocessing:
-
-    * Images are resized to a uniform 256x256 pixels.
-
-    * Pixel values are rescaled from [0, 255] to [0, 1] for model stability.
-
-* Data Augmentation: To improve generalization and prevent overfitting, random augmentations like horizontal/vertical flips and rotations are applied to the training data in real-time.
-
-* Model Architecture: The CNN consists of multiple convolutional and max-pooling layers to extract features, followed by dense layers for classification.
-
-    * 6 Conv2D layers with relu activation.
-
-    * 6 MaxPooling2D layers for down-sampling.
-
-    * A Flatten layer to transition to the classifier head.
-
-    * A Dense layer with 64 units (relu activation).
-
-    * The final Dense output layer with 3 units and softmax activation for multi-class probability distribution.
-
-* Training & Performance:
-
-    * The model was trained for 40 epochs using the Adam optimizer and SparseCategoricalCrossentropy loss function.
-
-    * The final model achieved an accuracy of approximately 85.5% on the hold-out test set.
+| Layer | Technology |
+|-------|-----------|
+| **Deep Learning** | TensorFlow, Keras, TensorFlow Serving |
+| **Image Processing** | Pillow (PIL), NumPy |
+| **Backend API** | FastAPI, Uvicorn, Pydantic v2 |
+| **Database** | PostgreSQL 13, SQLAlchemy (ORM) |
+| **Authentication** | python-jose (JWT), passlib[bcrypt] |
+| **Frontend** | Streamlit |
+| **Containerization** | Docker, Docker Compose |
+| **Testing** | Pytest, pytest-mock, FastAPI TestClient |
 
 ---
 
-## Testing and CI/CD
-The project emphasizes code quality through a comprehensive testing suite and a full CI/CD pipeline.
+## 🤝 Contributing
 
-***Testing***
+Contributions are welcome! If you have ideas, suggestions, or bug reports, please open an issue or submit a pull request.
 
-* Framework: Pytest is used for writing and running tests.
-
-* Test Database: Tests run against a separate, isolated test database (..._test) to avoid interfering with development data. The database is reset for each test function.
-
-* Fixtures (conftest.py):
-
-    * session: Provides a clean database session for each test.
-    * client: Creates a TestClient for the FastAPI app.
-    * test_user: Creates and returns a new user in the test database.
-    * authorized_client: Provides a TestClient with pre-set authorization headers for testing protected endpoints.
-
-* Coverage: Tests cover user creation, user login (valid and invalid), password hashing, and prediction endpoints (unauthorized, successful prediction, and history retrieval).
-
-**Continuous Integration & Delivery (CI/CD)**
-* **Platform**: GitHub Actions.
-* **Workflow (`ci.yml`)**:
-    1.  **Trigger**: The workflow runs automatically on every `push` or `pull_request` to the `master` branch.
-    2.  **Test Job**: It spins up a temporary PostgreSQL container, installs all dependencies, and runs the entire `pytest` suite to validate the code.
-    3.  **Build & Push Job**: If the tests pass, the workflow logs into Docker Hub, builds a new Docker image for the API, and pushes it with the `:latest` tag.
-    4.  **Deploy Job**: A placeholder `deploy` job demonstrates where deployment scripts to a production server would be placed. It runs only after a successful build on a push to `master`.
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## Contributing
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please feel free to open an issue or submit a pull request.
+## 📄 License
 
-1. Fork the Project.
-
-2. Create your Feature Branch (git checkout -b feature/AmazingFeature).
-
-3. Commit your Changes (git commit -m 'Add some AmazingFeature').
-
-4. Push to the Branch (git push origin feature/AmazingFeature).
-
-5. Open a Pull Request.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
+<div align="center">
+  <b>Built by Ashutosh Bhate</b>
+  <br>
+  <em>Full-Stack AI · Potato Disease Classification using CNN + FastAPI + Docker</em>
+</div>
