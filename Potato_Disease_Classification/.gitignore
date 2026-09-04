@@ -6,3 +6,6 @@ __pycache__/
 environ/
 venv/
 .venv/
+
+Fundamentals_PotatoDisease.md
+codebase_walkthrough.md
