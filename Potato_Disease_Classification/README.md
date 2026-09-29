@@ -192,12 +192,12 @@ flowchart LR
 | --------------------- | ------------------------------------------------- |
 | **Optimizer**         | Adam                                              |
 | **Loss Function**     | SparseCategoricalCrossentropy                     |
-| **Epochs**            | 40                                                |
+| **Epochs**            | Up to 40, early stopping on val accuracy (patience 8) |
 | **Input Size**        | 256 × 256 × 3                                     |
 | **Pixel Rescaling**   | [0, 255] → [0, 1]                                 |
 | **Data Augmentation** | Random horizontal/vertical flips, random rotation |
 | **Data Split**        | 80% train / 10% validation / 10% test             |
-| **Test Accuracy**     | **~85.5%**                                        |
+| **Test Accuracy**     | **96.8%**                                         |
 
 ---
 
@@ -206,7 +206,7 @@ flowchart LR
 | Feature                          | Description                                                                                              |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | **JWT Authentication**           | Secure registration & login with bcrypt password hashing and HS256 JWT tokens (30-min TTL)               |
-| **CNN Disease Classification**   | 3-class CNN distinguishing Early Blight, Late Blight, and Healthy leaves at ~85.5% accuracy              |
+| **CNN Disease Classification**   | 3-class CNN distinguishing Early Blight, Late Blight, and Healthy leaves at 96.8% test accuracy          |
 | **Prediction History**           | Authenticated users can view chronologically sorted history of past predictions, linked to their account |
 | **High-Performance API**         | FastAPI with async endpoints, automatic OpenAPI docs at `/docs`, Pydantic validation                     |
 | **Interactive Web UI**           | Streamlit frontend with image upload, real-time results, login/logout, and expandable history panels     |
