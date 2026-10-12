@@ -271,6 +271,14 @@ plt.tight_layout()
 
 # In[27]:
 model_version = 1
-model.export(f"Saved_Models/{model_version}")
+
+export_archive = keras.export.ExportArchive()
+export_archive.track(model)
+export_archive.add_endpoint(
+    name="serve",
+    fn=lambda images: model(images, training=False),
+    input_signature=[tf.TensorSpec(shape=(None, IMAGE_SIZE, IMAGE_SIZE, 3), dtype=tf.float32)],
+)
+export_archive.write_out(f"Saved_Models/{model_version}")
 
 print("Saved model versions:", os.listdir("Saved_Models"))

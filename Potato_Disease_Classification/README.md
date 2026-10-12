@@ -11,7 +11,7 @@
 ![CI/CD](https://github.com/AshutoshBhate/ML_Projects/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
 
-**A production-ready full-stack application that classifies potato leaf diseases using a CNN served via TensorFlow Serving, a FastAPI backend with JWT authentication, a PostgreSQL database for prediction history, and a Streamlit frontend — all orchestrated with Docker Compose.**
+**A full-stack application that classifies potato leaf diseases using a CNN served via TensorFlow Serving, a FastAPI backend with JWT authentication, a PostgreSQL database for prediction history, and a Streamlit frontend — all orchestrated with Docker Compose.**
 
 [Architecture](#-system-architecture) · [Disease Classes](#-disease-classes) · [Results](#-model-performance) · [Getting Started](#-getting-started) · [API Reference](#-api-reference) · [How It Works](#-how-it-works)
 
@@ -126,8 +126,8 @@ The model distinguishes between **3 classes** from the [PlantVillage](https://ww
 
 | Class            | Samples   | Percentage |
 | ---------------- | --------- | ---------- |
-| **Early Blight** | 1,000     | 46.4%      |
-| **Late Blight**  | 1,000     | 46.4%      |
+| **Early Blight** | 1,000     | 46.5%      |
+| **Late Blight**  | 1,000     | 46.5%      |
 | **Healthy**      | 152       | 7.1%       |
 | **Total**        | **2,152** | 100%       |
 
@@ -145,7 +145,7 @@ flowchart LR
         I["Potato Leaf\n256 × 256 × 3"]
     end
 
-    subgraph AUGMENT["🔄 Augmentation"]
+    subgraph AUGMENT["🔄 Augmentation (training only)"]
         AUG["Random Flip\n+ Random Rotation"]
     end
 
@@ -195,7 +195,7 @@ flowchart LR
 | **Epochs**            | Up to 40, early stopping on val accuracy (patience 8) |
 | **Input Size**        | 256 × 256 × 3                                     |
 | **Pixel Rescaling**   | [0, 255] → [0, 1]                                 |
-| **Data Augmentation** | Random horizontal/vertical flips, random rotation |
+| **Data Augmentation** | Random horizontal/vertical flips, random rotation (training only; off in the served model) |
 | **Data Split**        | 80% train / 10% validation / 10% test             |
 | **Test Accuracy**     | **96.8%**                                         |
 
@@ -421,8 +421,9 @@ erDiagram
 | `test_predict_success`         | Full prediction flow with mocked TF Serving returns correct class & confidence |
 | `test_get_prediction_history`  | Predictions are stored and retrievable, linked to the correct user             |
 | `test_create_user`             | User creation returns `201` with correct response schema                       |
-| `test_login`                   | Valid credentials return a JWT access token                                    |
-| `test_hash_password`           | Bcrypt hashing and verification work correctly                                 |
+| `test_login_user`              | Valid credentials return a JWT access token                                    |
+| `test_login_invalid_credentials` | A wrong password returns `403` with "Invalid Credentials"                    |
+| `test_password_hashing`        | Bcrypt hashing and verification work correctly                                 |
 
 ### Fixtures (`conftest.py`)
 
@@ -462,17 +463,22 @@ ML_Projects/
     ├── docker-compose.yml                  ← Orchestrates API + DB + TF Serving
     ├── .env                                ← Environment variables (not committed)
     ├── Notebook_1.ipynb                    ← Model training & experimentation
-    ├── Fundamentals_PotatoDisease.md       ← Background research notes
+    ├── export_serving_model.py             ← Re-exports Saved_Models/1 with augmentation off
+    ├── make_test_images.py                 ← Rebuilds the notebook's test split into Test_Images/
     │
-    ├── PlantVillage/                       ← Training dataset (2,152 images)
+    ├── Information/                        ← Study notes and a text copy of the notebook code
+    │
+    ├── PlantVillage/                       ← Full dataset (2,152 images)
     │   ├── Potato___Early_blight/          ← 1,000 images
     │   ├── Potato___Late_blight/           ← 1,000 images
     │   └── Potato___healthy/               ← 152 images
     │
+    ├── Test_Images/                        ← The 216 held-out test images (92 / 104 / 20)
+    │
     ├── Saved_Models/                       ← Exported TF SavedModel format
     │   └── 1/
-    │       ├── saved_model.pb              ← Model graph definition
-    │       ├── keras_metadata.pb           ← Keras layer metadata
+    │       ├── saved_model.pb              ← Serving graph (augmentation off)
+    │       ├── fingerprint.pb              ← SavedModel fingerprint
     │       └── variables/                  ← Trained weights
     │
     ├── api/                                ← FastAPI backend

@@ -10,3 +10,5 @@ venv/
 Fundamentals_PotatoDisease.md
 codebase_walkthrough.md
 Supplement_Notebook_1.ipynb
+
+.ipynb_checkpoints/
