@@ -7,8 +7,8 @@ environ/
 venv/
 .venv/
 
-Fundamentals_PotatoDisease.md
-codebase_walkthrough.md
+PotatoDisease_Fundamentals.md
+PotatoDisease_CodebaseWalkthrough.md
 Supplement_Notebook_1.ipynb
 
 .ipynb_checkpoints/
