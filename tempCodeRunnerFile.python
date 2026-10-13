@@ -1,6 +1,0 @@
-import pandas as pd
-
-data = {"A" : [1, 2, 5], "B" : [10, 56, 34, 2]}
-
-df = pd.DataFrame(data)
-print(df)
