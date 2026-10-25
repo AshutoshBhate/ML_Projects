@@ -13,7 +13,7 @@
 
 **A full-stack application that classifies potato leaf diseases using a CNN served via TensorFlow Serving, a FastAPI backend with JWT authentication, a PostgreSQL database for prediction history, and a Streamlit frontend — all orchestrated with Docker Compose.**
 
-[Architecture](#-system-architecture) · [Disease Classes](#-disease-classes) · [Results](#-model-performance) · [Getting Started](#-getting-started) · [API Reference](#-api-reference) · [How It Works](#-how-it-works)
+[Architecture](#system-architecture) · [Disease Classes](#disease-classes) · [Results](#model-performance) · [Getting Started](#getting-started) · [API Reference](#api-reference) · [How It Works](#how-it-works)
 
 </div>
 
