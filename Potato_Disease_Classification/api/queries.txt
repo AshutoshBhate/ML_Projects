@@ -37,7 +37,7 @@ docker build -t fastapi-potato-classifier -f api/Dockerfile .
 # === STEP D: RUN THE CONTAINERS ===
 # D.1 - Run the TensorFlow Serving Container
 # This mounts your local model into the container and gives it a consistent name.
-docker run -d --name tf_serving_potato -p 8501:8501 --mount type=bind,source="C:\Users\ashut\ML_Practice\Potato_Disease_Classification\Saved_Models",target=/models/potato_disease_classifier -e MODEL_NAME=potato_disease_classifier tensorflow/serving
+docker run -d --name tf_serving_potato -p 8501:8501 --mount type=bind,source="C:\Users\ashut\ML_Projects\Potato_Disease_Classification\Saved_Models",target=/models/potato_disease_classifier -e MODEL_NAME=potato_disease_classifier tensorflow/serving
 
 # D.2 - Run the FastAPI Container
 # This uses your .env file (in the project root) to securely pass environment variables.
