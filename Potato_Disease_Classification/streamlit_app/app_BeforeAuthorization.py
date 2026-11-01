@@ -1,9 +1,7 @@
 import streamlit as st
 import requests
 from PIL import Image
-import numpy as np
 import io
-import os
 
 FASTAPI_URL = "http://localhost:8000/predict" # Assuming FastAPI runs on 8000
 

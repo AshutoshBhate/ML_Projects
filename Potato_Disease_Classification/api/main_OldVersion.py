@@ -1,12 +1,9 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
-import uvicorn
 import numpy as np
 from io import BytesIO
 from PIL import Image
-import tensorflow as tf
 import requests
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 # Local imports
 from .database import get_db, engine, Base
