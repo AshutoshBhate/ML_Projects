@@ -1,7 +1,7 @@
 # Selective Speech Separation on Raspberry Pi using DPRNN-TasNet
 
 - This project implements a **selective speech separation system** on a **Raspberry Pi 4B** using the pre-trained **DPRNN-TasNet** model from the [Asteroid toolkit](https://github.com/asteroid-team/asteroid). 
-- It shows **Edge AI** in practice: a pre-trained deep learning model runs on a low-power, affordable board and separates mixed audio into individual speakers.
+- It shows **Edge AI** in practice: A pre-trained deep learning model runs on a low-power, affordable board and separates mixed audio into individual speakers.
 
 ---
 

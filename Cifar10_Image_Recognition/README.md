@@ -11,7 +11,7 @@ This folder contains a Jupyter notebook that implements a Convolutional Neural N
 
 - Loads CIFAR-10 using TensorFlow and Keras, and scales the pixel values to 0–1.
 - Trains a fully connected network first, as a baseline.
-- Builds a CNN: three convolution + max-pooling blocks (32, 64 and 128 filters), a 64-unit dense layer and a 10-class softmax output.
+- Builds a CNN: Three convolution + max-pooling blocks (32, 64 and 128 filters), a 64-unit dense layer and a 10-class softmax output.
 - Trains the CNN with Adam for 20 epochs and evaluates both models on the test data with a per-class classification report (precision, recall and F1).
 - Shows sample images with their labels and checks a few predictions.
 
